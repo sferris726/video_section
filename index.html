@@ -1,120 +1,59 @@
-<iframe
-  id="video"
-  width="560"
-  height="315"
-  src="https://www.youtube.com/embed/IpnPd42IfIQ"
-  title="YouTube video player"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-  allowfullscreen
-></iframe>
-
 <div>
   <p>
-    <button id="play-me">Play/Pause Video</button>
-  </p>
-  <p>
-    <button id="jump">Jump to 4 seconds</button>
-  </p>
-  <p>
-    <button id="jump2">Jump to 11 seconds</button>
+    <div id="video"></div>
+    <button onclick="myFunction(); return false" id="play-me">Play/Pause Video</button>
   </p>
 </div>
 
 <script>
+  function myFunction() {
+    document.getElementById("video").innerHTML = "<div id='player'></div>";
+
+    // 1. This code loads the IFrame Player API code asynchronously.
+    let tag = document.createElement("script");
+
+    tag.src = "https://www.youtube.com/iframe_api";
+    let firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  }
+
+  // 2. Section of the video to repeat
+  let section = {
+    start: 170,
+    end: 410,
+  }
+
+  // 3. This function creates an <iframe> (and YouTube player)
+  //    after the API code downloads.
   let player;
-  let myvideo = document.getElementById("myvideo");
-
-  /* add the same event and 
-   handler function to each 
-   of the three buttons */
-  // let buttons = ["playme", "jump", "jump2"];
-
-  // buttons.forEach(function (bn) {
-  //   document.getElementById(bn).addEventListener("click", buttonEvents, !1);
-  // });
-
-  // function buttonEvents(e) {
-  //   /* get the id of the clicked button */
-  //   let element_id = e.target.id;
-  //   /* E.G. element_id = 'playme', 'jump', or 'jump2' */
-
-  //   /* declare variables before setting them */
-  //   let timeStart = 0;
-  //   let timeEnd = 0;
-
-  //   /* set start and end values depending
-  //      on which button was clicked */
-  //   switch (element_id) {
-  //     case "playme":
-  //       /* example values... */
-  //       timeStart = 0;
-  //       timeEnd = 100;
-  //       break;
-  //     case "jump":
-  //       timeStart = 4;
-  //       timeEnd = 12;
-  //       break;
-  //     case "jump2":
-  //       timeStart = 12;
-  //       timeEnd = 24;
-  //   }
-
-  //   /* call 'playVideo()' */
-  //   playVideo(timeStart, timeEnd);
-  // }
-
-  // function playVideo(startTime, endTime) {
-  //   function checkTime() {
-  //     if (myvideo.currentTime >= endTime) {
-  //       myvideo.pause();
-  //     } else {
-  //       /* call checkTime every 1/10th
-  //         second until endTime */
-  //       setTimeout(checkTime, 100);
-  //     }
-  //   }
-
-  //   /* stop if playing (otherwise ignored) */
-  //   myvideo.pause();
-  //   /* set video start time */
-  //   myvideo.currentTime = startTime;
-  //   /* play video */
-  //   myvideo.play();
-  //   /* check the current time and
-  //  pause IF/WHEN endTime is reached */
-  //   checkTime();
-  // }
-
-  // this function gets called when API is ready to use
-  function onYouTubePlayerAPIReady() {
-    // create the global player from the specific iframe (#video)
-    player = new YT.Player("video", {
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player("player", {
+      height: "390",
+      width: "640",
+      videoId: "IpnPd42IfIQ",
       events: {
-        // call this function when player is ready to use
         onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange,
       },
     });
   }
 
+  // 4. The API will call this function when the video player is ready.
   function onPlayerReady(event) {
-    var playButton = document.getElementById("play-me");
-    playButton.addEventListener("click", function () {
-      player.playVideo();
-    });
-    var pauseButton = document.getElementById("pause-button");
-    pauseButton.addEventListener("click", function () {
-      player.pauseVideo();
-    });
-    var stopButton = document.getElementById("stop-button");
-    stopButton.addEventListener("click", function () {
-      player.stopVideo();
-    });
+    event.target.seekTo(section.start);
+    event.target.playVideo();
   }
 
-  // Inject YouTube API script
-  var tag = document.createElement("script");
-  tag.src = "https://www.youtube.com/player_api";
-  var firstScriptTag = document.getElementsByTagName("script")[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  // 5. The API calls this function when the player's state changes.
+  //    The function indicates that when playing a video (state=1),
+  //    the player should play for six seconds and then stop.
+  function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+      let duration = section.end - section.start;
+      setTimeout(restartVideoSection, duration * 1000);
+    }
+  }
+  function restartVideoSection() {
+    player.seekTo(section.start);
+  }
 </script>
